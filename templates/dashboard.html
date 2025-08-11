@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediCall - AI Assistant Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🏥 MediCall AI Assistant</h1>
+            <p class="tagline">Automating healthcare administration to save clinician time</p>
+        </header>
+
+        <nav class="main-navigation">
+            <a href="/insurance" class="nav-btn">🏥 Insurance</a>
+            <a href="/care-coordination" class="nav-btn">👥 Care Coordination</a>
+        </nav>
+
+        <div class="dashboard-overview">
+            <h2>Welcome to MediCall</h2>
+            <p>Choose a module to start automating your administrative tasks:</p>
+            
+            <div class="module-cards">
+                <a href="/insurance" class="module-card">
+                    <div class="module-icon">🏥</div>
+                    <h3>Insurance Management</h3>
+                    <p>Automate insurance verification calls and claims follow-up</p>
+                    <div class="module-stats">
+                        <span>16 pending tasks</span>
+                    </div>
+                </a>
+                
+                <a href="/care-coordination" class="module-card">
+                    <div class="module-icon">👥</div>
+                    <h3>Care Coordination</h3>
+                    <p>Automate patient outreach, appointments, and care management</p>
+                    <div class="module-stats">
+                        <span>8 pending tasks</span>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

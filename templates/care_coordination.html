@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediCall - Care Coordination</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🏥 MediCall AI Assistant</h1>
+            <p class="tagline">Automated Care Coordination & Patient Outreach</p>
+        </header>
+
+        <nav class="main-navigation">
+            <a href="/" class="nav-btn">🏠 Dashboard</a>
+            <a href="/insurance" class="nav-btn">🏥 Insurance</a>
+            <a href="/care-coordination" class="nav-btn active">👥 Care Coordination</a>
+        </nav>
+
+        <div class="stats-bar">
+            <div class="stat" data-tooltip="32% time reduction = 3.2 hours saved per 10-hour workday. Calculated as: (Manual coordination time - AI time) / Manual time. Manual coordination: 25-30 min, AI coordination: 2-4 min.">
+                <span class="stat-number">32%</span>
+                <span class="stat-sub">3.2 hrs/day</span>
+                <span class="stat-label">Time Saved</span>
+            </div>
+            <div class="stat" data-tooltip="Percentage of patients successfully contacted on first attempt. Calculated from last 500 coordination tasks: 480 successful contacts / 500 attempts. Includes phone, email, and mail outreach.">
+                <span class="stat-number">96%</span>
+                <span class="stat-sub">480/500 contacts</span>
+                <span class="stat-label">Contact Success</span>
+            </div>
+            <div class="stat" data-tooltip="Average time for AI to complete care coordination tasks. Includes patient contact, scheduling, documentation, and follow-up actions. Manual average: 27m 00s.">
+                <span class="stat-number">2m 48s</span>
+                <span class="stat-sub">vs 27m 00s manual</span>
+                <span class="stat-label">Avg Task Time</span>
+            </div>
+            <div class="stat" data-tooltip="Patient satisfaction score from post-coordination surveys. Based on 200 patient responses rating AI interactions as 'satisfied' or 'very satisfied'. Scale: Very Satisfied (5) to Very Dissatisfied (1).">
+                <span class="stat-number">94%</span>
+                <span class="stat-sub">188/200 positive</span>
+                <span class="stat-label">Patient Satisfaction</span>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="care-queue">
+                <h2>👥 Care Coordination Queue</h2>
+                
+                <div class="queue-controls">
+                    <div class="filters">
+                        <select id="priority-filter" onchange="filterTasks()">
+                            <option value="all">All Priorities</option>
+                            <option value="high">High Priority</option>
+                            <option value="medium">Medium Priority</option>
+                            <option value="low">Low Priority</option>
+                        </select>
+                        
+                        <select id="type-filter" onchange="filterTasks()">
+                            <option value="all">All Task Types</option>
+                            <option value="Follow-up Appointment">Follow-up Appointment</option>
+                            <option value="Lab Results Review">Lab Results Review</option>
+                            <option value="Medication Refill">Medication Refill</option>
+                            <option value="Specialist Referral">Specialist Referral</option>
+                            <option value="Appointment Reminder">Appointment Reminder</option>
+                            <option value="Test Scheduling">Test Scheduling</option>
+                            <option value="Care Plan Review">Care Plan Review</option>
+                            <option value="Discharge Follow-up">Discharge Follow-up</option>
+                        </select>
+                        
+                        <select id="contact-filter" onchange="filterTasks()">
+                            <option value="all">All Contact Methods</option>
+                            <option value="phone">Phone</option>
+                            <option value="email">Email</option>
+                            <option value="mail">Mail</option>
+                        </select>
+                    </div>
+                    
+                    <div class="queue-header">
+                        <span id="task-count">{{ care_tasks|length }} tasks pending</span>
+                        <button id="coordinate-all-btn" class="btn-primary">🤖 Coordinate All with AI</button>
+                    </div>
+                </div>
+                
+                <div class="care-list" id="care-list">
+                    {% for task in care_tasks %}
+                    <div class="care-card" data-task-id="{{ task.id }}" data-priority="{{ task.priority }}" data-type="{{ task.task_type }}" data-contact="{{ task.contact_method }}">
+                        <div class="care-info">
+                            <div class="care-header">
+                                <h3>{{ task.patient_name }}</h3>
+                                <span class="priority-badge priority-{{ task.priority }}">{{ task.priority|title }}</span>
+                            </div>
+                            <p><strong>Task:</strong> {{ task.task_type }}</p>
+                            <p><strong>Due Date:</strong> {{ task.due_date }}</p>
+                            <p><strong>Contact Method:</strong> 
+                                {% if task.contact_method == 'phone' %}📞 Phone
+                                {% elif task.contact_method == 'email' %}📧 Email
+                                {% else %}📮 Mail{% endif %}
+                            </p>
+                            <p><strong>Contact Info:</strong> 
+                                {% if task.contact_method == 'phone' %}{{ task.phone }}
+                                {% elif task.contact_method == 'email' %}{{ task.email }}
+                                {% else %}{{ task.address }}{% endif %}
+                            </p>
+                            <p><strong>Notes:</strong> {{ task.notes }}</p>
+                        </div>
+                        <div class="care-actions">
+                            <span class="status-badge status-{{ task.status }}">{{ task.status|title }}</span>
+                            <button class="btn-coordinate" onclick="coordinateCare({{ task.id }})">
+                                🎯 AI Coordinate Now
+                            </button>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- AI Activity Monitor -->
+            <div class="ai-monitor">
+                <h2 id="monitor-title">👥 Live Care Coordination Monitor</h2>
+                <div id="ai-status" class="ai-inactive">
+                    <p>No active coordination tasks</p>
+                    <p class="subtitle">AI assistant ready to coordinate patient care</p>
+                </div>
+                
+                <div id="ai-progress" class="ai-progress hidden">
+                    <div class="progress-header">
+                        <h3 id="current-task">Coordinating: <span></span></h3>
+                        <div class="progress-controls">
+                            <div class="ai-timer">⏱️ <span id="timer">00:00</span></div>
+                            <button id="stop-btn" class="btn-stop" onclick="stopProcess()">⏹️ Stop</button>
+                        </div>
+                    </div>
+                    <div class="progress-steps" id="progress-steps"></div>
+                </div>
+
+                <div id="ai-results" class="ai-results hidden">
+                    <h3 id="results-title">✅ Coordination Complete</h3>
+                    <div id="results-content"></div>
+                    <button onclick="closeResults()" class="btn-secondary">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/care.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediCall - Insurance Management</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🏥 MediCall AI Assistant</h1>
+            <p class="tagline">Insurance Management & Claims Automation</p>
+        </header>
+
+        <nav class="main-navigation">
+            <a href="/" class="nav-btn">🏠 Dashboard</a>
+            <a href="/insurance" class="nav-btn active">🏥 Insurance</a>
+            <a href="/care-coordination" class="nav-btn">👥 Care Coordination</a>
+        </nav>
+
+        <div class="stats-bar">
+            <div class="stat" data-tooltip="25% time reduction = 2.5 hours saved per 10-hour workday. Calculated as: (Manual time - AI time) / Manual time. Manual verification: 15-20 min, AI verification: 3-4 min.">
+                <span class="stat-number">25%</span>
+                <span class="stat-sub">2.5 hrs/day</span>
+                <span class="stat-label">Time Saved</span>
+            </div>
+            <div class="stat" data-tooltip="Accuracy rate based on successful task completion without human intervention. Calculated from last 1,000 AI processes: 980 successful completions / 1,000 total attempts.">
+                <span class="stat-number">98%</span>
+                <span class="stat-sub">980/1000 tasks</span>
+                <span class="stat-label">Accuracy Rate</span>
+            </div>
+            <div class="stat" data-tooltip="Average time for AI to complete insurance verification calls. Includes dialing, navigating menus, speaking with representatives, and data extraction. Manual average: 17m 30s.">
+                <span class="stat-number">3m 12s</span>
+                <span class="stat-sub">vs 17m 30s manual</span>
+                <span class="stat-label">Avg Call Time</span>
+            </div>
+            <div class="stat" data-tooltip="Total revenue recovered through automated claims follow-up this quarter. Calculated as: Successfully resubmitted claims × average claim value. Includes denied claims made payable and expedited pending claims.">
+                <span class="stat-number">$2.1M</span>
+                <span class="stat-sub">Q1 2024</span>
+                <span class="stat-label">Revenue Recovered</span>
+            </div>
+        </div>
+
+        <div class="tab-navigation">
+            <button class="tab-btn active" onclick="switchTab('verification')">📞 Insurance Verification</button>
+            <button class="tab-btn" onclick="switchTab('claims')">💰 Claims Follow-up</button>
+        </div>
+
+        <div class="main-content">
+            <!-- Insurance Verification Tab -->
+            <div id="verification-tab" class="tab-content active">
+                <div class="patient-queue">
+                    <h2>📋 Insurance Verification Queue</h2>
+                    
+                    <div class="queue-controls">
+                        <div class="filters">
+                            <input type="text" id="patient-search" placeholder="Search patients..." oninput="filterPatients()">
+                            <select id="insurance-filter" onchange="filterPatients()">
+                                <option value="all">All Insurance Providers</option>
+                                <option value="Blue Cross Blue Shield">Blue Cross Blue Shield</option>
+                                <option value="Aetna">Aetna</option>
+                                <option value="UnitedHealthcare">UnitedHealthcare</option>
+                                <option value="Cigna">Cigna</option>
+                                <option value="Humana">Humana</option>
+                                <option value="Kaiser Permanente">Kaiser Permanente</option>
+                            </select>
+                            <select id="patient-sort" onchange="sortPatients()">
+                                <option value="name">Sort by Name</option>
+                                <option value="insurance">Sort by Insurance</option>
+                                <option value="dob">Sort by DOB</option>
+                            </select>
+                        </div>
+                        
+                        <div class="queue-header">
+                            <span id="patient-count">{{ patients|length }} patients pending verification</span>
+                            <button id="verify-all-btn" class="btn-primary">🤖 Verify All with AI</button>
+                        </div>
+                    </div>
+                    
+                    <div class="patient-list" id="patient-list">
+                        {% for patient in patients %}
+                        <div class="patient-card" data-patient-id="{{ patient.id }}" data-name="{{ patient.name }}" data-insurance="{{ patient.insurance }}" data-dob="{{ patient.dob }}">
+                            <div class="patient-info">
+                                <h3>{{ patient.name }}</h3>
+                                <p><strong>DOB:</strong> {{ patient.dob }}</p>
+                                <p><strong>Insurance:</strong> {{ patient.insurance }}</p>
+                                <p><strong>Policy:</strong> {{ patient.policy_number }}</p>
+                                <p><strong>Phone:</strong> {{ patient.phone }}</p>
+                            </div>
+                            <div class="patient-actions">
+                                <span class="status-badge status-pending">Pending Verification</span>
+                                <button class="btn-verify" onclick="verifyInsurance({{ patient.id }})">
+                                    🎯 AI Verify Now
+                                </button>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Claims Follow-up Tab -->
+            <div id="claims-tab" class="tab-content">
+                <div class="claims-queue">
+                    <h2>💰 Claims Follow-up Queue</h2>
+                    
+                    <div class="queue-controls">
+                        <div class="filters">
+                            <input type="text" id="claim-search" placeholder="Search claims..." oninput="filterClaims()">
+                            <select id="status-filter" onchange="filterClaims()">
+                                <option value="all">All Statuses</option>
+                                <option value="denied">Denied</option>
+                                <option value="pending">Pending</option>
+                            </select>
+                            <select id="amount-filter" onchange="filterClaims()">
+                                <option value="all">All Amounts</option>
+                                <option value="low">Under $200</option>
+                                <option value="medium">$200 - $500</option>
+                                <option value="high">Over $500</option>
+                            </select>
+                            <select id="claim-sort" onchange="sortClaims()">
+                                <option value="patient">Sort by Patient</option>
+                                <option value="amount">Sort by Amount</option>
+                                <option value="days">Sort by Days Pending</option>
+                                <option value="date">Sort by Service Date</option>
+                            </select>
+                        </div>
+                        
+                        <div class="queue-header">
+                            <span id="claim-count">{{ claims|length }} claims need follow-up</span>
+                            <button id="followup-all-btn" class="btn-primary">🤖 Follow-up All with AI</button>
+                        </div>
+                    </div>
+                    
+                    <div class="claims-list" id="claims-list">
+                        {% for claim in claims %}
+                        <div class="claim-card" data-claim-id="{{ claim.id }}" data-patient="{{ claim.patient_name }}" data-status="{{ claim.status }}" data-amount="{{ claim.amount }}" data-days="{{ claim.days_pending }}" data-date="{{ claim.service_date }}">
+                            <div class="claim-info">
+                                <h3>{{ claim.patient_name }}</h3>
+                                <p><strong>Claim #:</strong> {{ claim.claim_number }}</p>
+                                <p><strong>Service Date:</strong> {{ claim.service_date }}</p>
+                                <p><strong>Amount:</strong> {{ claim.amount }}</p>
+                                <p><strong>Days Pending:</strong> {{ claim.days_pending }} days</p>
+                                <p><strong>Reason:</strong> {{ claim.reason }}</p>
+                            </div>
+                            <div class="claim-actions">
+                                <span class="status-badge status-{{ claim.status }}">{{ claim.status|title }}</span>
+                                <button class="btn-followup" onclick="followUpClaim({{ claim.id }})">
+                                    🔄 AI Follow-up Now
+                                </button>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI Activity Monitor -->
+            <div class="ai-monitor">
+                <h2 id="monitor-title">📞 Live AI Monitor</h2>
+                <div id="ai-status" class="ai-inactive">
+                    <p>No active AI tasks</p>
+                    <p class="subtitle">AI assistant ready to automate calls and follow-ups</p>
+                </div>
+                
+                <div id="ai-progress" class="ai-progress hidden">
+                    <div class="progress-header">
+                        <h3 id="current-task">Processing: <span></span></h3>
+                        <div class="progress-controls">
+                            <div class="ai-timer">⏱️ <span id="timer">00:00</span></div>
+                            <button id="stop-btn" class="btn-stop" onclick="stopProcess()">⏹️ Stop</button>
+                        </div>
+                    </div>
+                    <div class="progress-steps" id="progress-steps"></div>
+                </div>
+
+                <div id="ai-results" class="ai-results hidden">
+                    <h3 id="results-title">✅ Task Complete</h3>
+                    <div id="results-content"></div>
+                    <button onclick="closeResults()" class="btn-secondary">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
