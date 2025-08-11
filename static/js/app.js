@@ -4,8 +4,8 @@ let currentTab = 'verification';
 let isProcessing = false;
 let shouldStop = false;
 
-async function verifyInsurance(patientId) {
-    if (isProcessing) {
+async function verifyInsurance(patientId, bypassCheck = false) {
+    if (isProcessing && !bypassCheck) {
         alert('Process already running. Use stop button to cancel.');
         return;
     }
@@ -58,8 +58,8 @@ async function verifyInsurance(patientId) {
     isProcessing = false;
 }
 
-async function followUpClaim(claimId) {
-    if (isProcessing) {
+async function followUpClaim(claimId, bypassCheck = false) {
+    if (isProcessing && !bypassCheck) {
         alert('Process already running. Use stop button to cancel.');
         return;
     }
@@ -474,7 +474,7 @@ document.getElementById('verify-all-btn')?.addEventListener('click', async funct
         const patientCard = visiblePendingPatients[i];
         const patientId = parseInt(patientCard.dataset.patientId);
         
-        await verifyInsurance(patientId);
+        await verifyInsurance(patientId, true);
         
         // Wait a bit before next call
         if (i < visiblePendingPatients.length - 1 && !shouldStop) {
@@ -513,7 +513,7 @@ document.getElementById('followup-all-btn')?.addEventListener('click', async fun
         const claimCard = visiblePendingClaims[i];
         const claimId = parseInt(claimCard.dataset.claimId);
         
-        await followUpClaim(claimId);
+        await followUpClaim(claimId, true);
         
         // Wait a bit before next follow-up
         if (i < visiblePendingClaims.length - 1 && !shouldStop) {

@@ -3,8 +3,8 @@ let startTime;
 let isProcessing = false;
 let shouldStop = false;
 
-async function coordinateCare(taskId) {
-    if (isProcessing) {
+async function coordinateCare(taskId, bypassCheck = false) {
+    if (isProcessing && !bypassCheck) {
         alert('Process already running. Use stop button to cancel.');
         return;
     }
@@ -334,7 +334,7 @@ document.getElementById('coordinate-all-btn').addEventListener('click', async fu
         const taskCard = visiblePendingTasks[i];
         const taskId = parseInt(taskCard.dataset.taskId);
         
-        await coordinateCare(taskId);
+        await coordinateCare(taskId, true);
         
         // Wait a bit before next task
         if (i < visiblePendingTasks.length - 1 && !shouldStop) {
