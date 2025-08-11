@@ -9,10 +9,10 @@
 pip install -r requirements.txt
 
 # Run the application
-python app.py
+python application.py
 
 # Open browser
-open http://localhost:5000
+open http://localhost:8000
 ```
 
 ## ✨ Features
